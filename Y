@@ -1,3 +1,16 @@
+from statsmodels.tsa.ardl import ARDL
+
+# Define the model with lagged values for Trump's odds
+# ARDL(p, q) where p is the lag of DXY and q is the lag of Trump's odds
+# Use lag_order=(2,2) to include 2 lags for both DXY and Trump's odds
+model = ARDL(merged_df['DXY_diff'], lags=2, exog=merged_df['Trump_diff'], order=(2, 2))
+
+# Fit the model
+result = model.fit()
+
+# Print the summary to see the coefficients for both current and lagged values of Trump's odds
+print(result.summary())
+
 import pandas as pd
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import adfuller
