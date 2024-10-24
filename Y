@@ -1,3 +1,49 @@
+import pandas as pd
+import statsmodels.api as sm
+from statsmodels.tsa.ardl import ARDL
+import matplotlib.pyplot as plt
+
+# Assuming 'merged_df' contains the differenced series 'DXY_diff' and 'Trump_diff'
+
+# Step 1: Fit the ARDL model
+# We specify the number of lags for the dependent variable (DXY_diff) and the independent variable (Trump_diff)
+# lags=(p, [q]) means p lags for DXY and q lags for Trump's odds
+
+model = ARDL(endog=merged_df['DXY_diff'], exog=merged_df[['Trump_diff']], lags=(2, [2]))
+
+# Fit the model
+result = model.fit()
+
+# Step 2: Print the ARDL model summary to see the effect of Trump's odds (both contemporaneous and lagged)
+print(result.summary())
+
+# Step 3: Impulse Response Function (IRF)
+# This will show how a one-time shock to Trump's odds affects DXY over time
+irf = result.irf(10)  # Simulate the response for 10 periods ahead
+
+# Plot the Impulse Response
+irf.plot(orth=False)
+plt.title("Impulse Response: Effect of Trump's Odds on DXY")
+plt.show()
+
+# Step 4: Forecast future DXY values based on the ARDL model (optional)
+forecast = result.forecast(steps=5)
+print(forecast)
+
+# Plot the forecasted DXY values
+plt.figure(figsize=(10,6))
+plt.plot(forecast, label="Forecasted DXY", color='blue')
+plt.title("Forecasted DXY Based on Trump's Odds")
+plt.legend()
+plt.show()
+
+
+
+
+
+xxxx
+
+
 from statsmodels.tsa.ardl import ARDL
 
 # Define the model with lagged values for Trump's odds
