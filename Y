@@ -1,3 +1,45 @@
+# Use the best SVR model (with the tuned parameters) to make predictions
+y_pred_svr = best_svr_model.predict(X_svr_scaled)
+
+# Plot the actual USDEUR data versus the predictions from the SVR model
+plt.figure(figsize=(8, 6))
+
+# Scatter plot of actual data
+plt.scatter(X_svr, Y_svr, label='Actual Data', color='blue', alpha=0.6)
+
+# Plot the SVR predictions
+plt.plot(X_svr, y_pred_svr, label='SVR Predictions', color='green')
+
+# Add labels and legend
+plt.xlabel("Trump Winning Odds")
+plt.ylabel("USDEUR Exchange Rate")
+plt.title("SVR Model Predictions: Trump Odds vs USDEUR")
+plt.legend()
+
+# Show the plot
+plt.show()
+
+# Calculate first and second derivatives
+import numpy as np
+from scipy.misc import derivative
+
+# First derivative (slope)
+def svr_predict_func(x):
+    # Use linear interpolation to simulate the predictions at specific points
+    return np.interp(x, X_svr, y_pred_svr)
+
+# Computing the first derivative (rate of change of predictions, which represents the slope, or beta)
+first_derivative = derivative(svr_predict_func, X_svr, dx=1e-6)
+
+# Computing the second derivative (rate of change of the slope, which gives the curvature)
+second_derivative = derivative(svr_predict_func, X_svr, dx=1e-6, n=2)
+
+# You can now use `first_derivative` and `second_derivative` for further analysis or plotting
+
+
+
+xxxx
+
 import pandas as pd
 import statsmodels.api as sm
 from statsmodels.tsa.ardl import ARDL
