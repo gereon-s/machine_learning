@@ -1,0 +1,58 @@
+import pandas as pd
+import statsmodels.api as sm
+from statsmodels.tsa.api import VAR
+from statsmodels.tsa.stattools import adfuller
+
+# Step 1: Prepare the Data (stationarity check and differencing if necessary)
+
+def check_stationarity(series):
+    result = adfuller(series)
+    p_value = result[1]
+    return p_value  # p-value > 0.05 indicates non-stationarity
+
+# Check for stationarity of DXY and Trump's odds
+pval_dxy = check_stationarity(merged_df['DXY'])
+pval_trump = check_stationarity(merged_df['Trump'])
+
+# If any variable is non-stationary, we difference it
+if pval_dxy > 0.05:
+    merged_df['DXY_diff'] = merged_df['DXY'].diff().dropna()
+else:
+    merged_df['DXY_diff'] = merged_df['DXY']
+
+if pval_trump > 0.05:
+    merged_df['Trump_diff'] = merged_df['Trump'].diff().dropna()
+else:
+    merged_df['Trump_diff'] = merged_df['Trump']
+
+# Drop rows with NaN values (caused by differencing)
+merged_df.dropna(inplace=True)
+
+# Step 2: Fit the VAR Model
+# Select only DXY and Trump odds for the VAR model
+vars_for_var = merged_df[['DXY_diff', 'Trump_diff']]
+
+# Fit the VAR model
+model = VAR(vars_for_var)
+
+# Step 3: Select optimal lag order using AIC or BIC criteria
+lag_order = model.select_order(maxlags=10)
+print(lag_order.summary())  # This will print the recommended lag order based on AIC/BIC
+
+# Fit the model with the optimal lag length
+optimal_lag = lag_order.aic  # or use bic if BIC recommends a better lag order
+var_model_fitted = model.fit(optimal_lag)
+
+# Step 4: Impulse Response Function (IRF)
+# Let's compute the IRF to see how a shock in Trump's odds affects DXY
+irf = var_model_fitted.irf(10)  # Response for 10 periods ahead
+
+# Plot the impulse response
+irf.plot(orth=False)
+plt.title('Impulse Response: Trump\'s Odds Shock on DXY')
+plt.show()
+
+# Step 5: Granger Causality Test (Optional)
+# Test if Trump's odds Granger-cause DXY
+granger_test = var_model_fitted.test_causality('Trump_diff', 'DXY_diff', kind='f')
+print(granger_test.summary())
